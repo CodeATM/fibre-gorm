@@ -1,0 +1,19 @@
+# .air.conf
+# Minimal configuration for hot reloading your Go Fiber application on Windows.
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# Build command for Windows: note the .exe extension.
+cmd = "go build -o tmp/main.exe ."
+# The path to the compiled binary.
+bin = "tmp/main.exe"
+# File extensions to watch (modify as needed).
+include_ext = ["go", "html"]
+# Directories to ignore.
+exclude_dir = ["vendor", "tmp"]
+# Delay in milliseconds before triggering a rebuild.
+delay = 500
+# Whether to stop the running binary if there is a build error.
+stop_on_error = false
