@@ -13,7 +13,7 @@ type User struct {
 	// this is a serializer
 	ID        uint   `json:"id"`
 	Firstname string `json:"first_name"`
-	Lastname  string `json:"Last_name"`
+	Lastname  string `json:"last_name"`
 }
 
 func CreateResponder(userModel models.User) User {
