@@ -1,8 +1,10 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
 	database "github.com/CodeATM/fibre-gorm/Database"
@@ -63,4 +65,91 @@ func GetProducts(c *fiber.Ctx) error {
 
 	// Return the response as JSON
 	return c.Status(200).JSON(responseProduct)
+}
+
+func FindProduct(id int, product *models.Product) error {
+	database.Database.Db.Find(&product, "id = ?", id)
+
+	if product.ID == 0 {
+		return errors.New("Product does not exist")
+	}
+
+	return nil
+}
+
+func GetProduct(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Please ensure that :id is an integer",
+		})
+	}
+
+	var product models.Product
+
+	if err := FindProduct(id, &product); err != nil {
+		return c.Status(400).JSON(err.Error())
+	}
+
+	response := CreateProductResponder(product)
+
+	return c.Status(200).JSON(response)
+}
+
+func UpdateProduct(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Please ensure that :id is an integer",
+		})
+	}
+
+	var product models.Product
+
+	if err := FindProduct(id, &product); err != nil {
+		return c.Status(400).JSON(err.Error())
+	}
+
+	type UpdateProduct struct {
+		Name string `json:"product_name"`
+	}
+
+	var updateData UpdateProduct
+
+	if err := c.BodyParser(&updateData); err != nil {
+		return c.Status(400).JSON(err.Error())
+	}
+
+	product.Name = updateData.Name
+	database.Database.Db.Save(&product)
+	response := CreateProductResponder(product)
+	return c.Status(200).JSON(response)
+}
+
+func DeleteProduct(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Please ensure that :id is an integer",
+		})
+	}
+	var product models.Product
+
+	if err := FindUser(id, &product); err != nil {
+		return c.Status(400).JSON(err.Error())
+	}
+
+	if err := database.Database.Db.Delete(&product); err != nil {
+		c.Status(404).JSON(err.Error)
+	}
+
+	return c.Status(200).SendString("Successfully deleted a product")
 }
